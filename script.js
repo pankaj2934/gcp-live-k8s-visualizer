@@ -35,10 +35,11 @@ var uses = {};
 var groups = {};
 
 var insertByName = function(index, value) {
-  if (!value || !value.metadata.labels || !value.metadata.name) {
+	console.log("in insert by name " + value.metadata.name)
+  if (!value || !value.metadata.labels || !value.metadata.name    ) {
     return;
   }
-  // console.log("type = " + value.type + " labels = " + value.metadata.name);
+   console.log("type = " + value.type + " labels = " );
   //	var list = groups[value.metadata.name];
   var key = value.metadata.labels.name;
 	var list = groups[key];
@@ -50,8 +51,11 @@ var insertByName = function(index, value) {
 };
 
 var groupByName = function() {
+	console.log("in grp by name -PODS")
 	$.each(pods.items, insertByName);
+	console.log("in grp by name -controlles")
 	$.each(controllers.items, insertByName);
+	console.log("in grp by name -services")
 	$.each(services.items, insertByName);
 };
 
@@ -66,17 +70,19 @@ var matchesLabelQuery = function(labels, selector) {
 }
 
 var connectControllers = function() {
-    connectUses();
+	console.log("in connect controllers")
+    //connectUses();
 	for (var i = 0; i < controllers.items.length; i++) {
 		var controller = controllers.items[i];
-    //console.log("controller: " + controller.metadata.name)
+    console.log("controller: " + controller.metadata.name)
+		console.log(pods)
 		for (var j = 0; j < pods.items.length; j++) {
 			var pod = pods.items[j];
 			if (pod.metadata.labels.name == controller.metadata.labels.name) {
         if (controller.metadata.labels.version && pod.metadata.labels.version && (controller.metadata.labels.version != pod.metadata.labels.version)) {
           continue;
         }
-        //console.log('connect controller: ' + 'controller-' + controller.metadata.name + ' to pod-' + pod.metadata.name);
+        console.log('connect controller: ' + 'controller-' + controller.metadata.name + ' to pod-' + pod.metadata.name);
 				jsPlumb.connect({
 					source: 'controller-' + controller.metadata.name,
 					target: 'pod-' + pod.metadata.name,
@@ -106,6 +112,7 @@ var connectControllers = function() {
 			}
 		}
 	}
+	console.log("out connect controllers")
 };
 
 var colors = [
@@ -158,7 +165,7 @@ var connectUses = function() {
 var makeGroupOrder = function() {
   var groupScores = {};
   $.each(groups, function(key, val) {
-    //console.log("group key: " + key);
+    console.log("group key: " + key);
 		if (!groupScores[key]) {
 		  groupScores[key] = 0;
 		}
@@ -190,10 +197,11 @@ var makeGroupOrder = function() {
 };
 
 var renderNodes = function() {
+	console.log("in render nodes")
 	var y = 25;
 	var x = 100;
   $.each(nodes.items, function(index, value) {
-    console.log(value);
+    //console.log(value);
 		var div = $('<div/>');
     var ready = 'not_ready';
     $.each(value.status.conditions, function(index, condition) {
@@ -205,7 +213,7 @@ var renderNodes = function() {
  		var eltDiv = $('<div class="window node ' + ready + '" title="' + value.metadata.name + '" id="node-' + value.metadata.name +
                  '" style="left: ' + (x + 250) + '; top: ' + y + '"/>');
 	  eltDiv.html('<span><b>Node</b><br/><br/>' + 
-          truncate(value.metadata.name, 6) +
+          truncate(value.metadata.name, 12) +
           '</span>');
     div.append(eltDiv);
 
@@ -214,9 +222,12 @@ var renderNodes = function() {
 
     x += 120;
  });
+	console.log("out render nodes")
 }
 
 var renderGroups = function() {
+
+	console.log("in render groups")
 	var elt = $('#sheet');
 	var y = 10;
 	var serviceLeft = 0;
@@ -231,7 +242,7 @@ var renderGroups = function() {
 		var div = $('<div/>');
 		var x = 100;
 		$.each(list, function(index, value) {
-      //console.log("render groups: " + value.type + ", " + value.metadata.name + ", " + index)
+      console.log("render groups: " + value.type + ", " + value.metadata.name + ", " + index)
 			var eltDiv = null;
       console.log(value);
       var phase = value.status.phase ? value.status.phase.toLowerCase() : '';
@@ -242,9 +253,9 @@ var renderGroups = function() {
 				eltDiv = $('<div class="window pod ' + phase + '" title="' + value.metadata.name + '" id="pod-' + value.metadata.name +
 					'" style="left: ' + (x + 250) + '; top: ' + (y + 160) + '"/>');
 				eltDiv.html('<span>' + 
-          truncate(value.metadata.name, 8, true) +
+          truncate(value.metadata.name, 6, true) +
           (value.metadata.labels.version ? "<br/>" + value.metadata.labels.version : "") + "<br/><br/>" +
-          "(" + (value.spec.nodeName ? truncate(value.spec.nodeName, 6) : "None")  +")" +
+          "(" + (value.spec.nodeName ? truncate(value.spec.nodeName, 12) : "None")  +")" +
           '</span>');
 			} else if (value.type == "service") {
 				eltDiv = $('<div class="window wide service ' + phase + '" title="' + value.metadata.name + '" id="service-' + value.metadata.name +
@@ -277,6 +288,7 @@ var renderGroups = function() {
 		serviceLeft += 200;
 		elt.append(div);
 	});
+	console.log("out render groups")
 };
 
 var insertUse = function(name, use) {
@@ -290,7 +302,7 @@ var insertUse = function(name, use) {
 
 var loadData = function() {
 	var deferred = new $.Deferred();
-	var req1 = $.getJSON("/api/v1/pods?labelSelector=visualize%3Dtrue", function( data ) {
+	var req1 = $.getJSON("/api/v1/namespaces/default/pods?labelSelector=visualize%3Dtrue", function( data ) {
 		pods = data;
 		$.each(data.items, function(key, val) {
     	val.type = 'pod';
@@ -305,7 +317,7 @@ var loadData = function() {
     });
 	});
 
-	var req2 = $.getJSON("/api/v1/replicationcontrollers?labelSelector=visualize%3Dtrue", function( data ) {
+	var req2 = $.getJSON("/apis/extensions/v1beta1/namespaces/default/deployments?labelSelector=visualize%3Dtrue", function( data ) {
 		controllers = data;
 		$.each(data.items, function(key, val) {
       val.type = 'replicationController';
@@ -314,14 +326,15 @@ var loadData = function() {
 	});
 
 
-	var req3 = $.getJSON("/api/v1/services?labelSelector=visualize%3Dtrue", function( data ) {
+	var req3 = $.getJSON("/api/v1/namespaces/default/services?labelSelector=visualize%3Dtrue", function( data ) {
 		services = data;
 		//console.log("loadData(): Services");
-		//console.log(services);
+		console.log(services);
 		$.each(data.items, function(key, val) {
       val.type = 'service';
-      //console.log("service ID = " + val.metadata.name)
+      console.log("service ID = " + val.metadata.name)
     });
+
 	});
 
 	var req4 = $.getJSON("/api/v1/nodes", function( data ) {

@@ -72,6 +72,9 @@
   background-color: red;
 }
 
+.ready {
+  background-color: #2ecc71;
+}
 .terminating {
   background-color: red;
 }
