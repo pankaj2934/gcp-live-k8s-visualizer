@@ -9,7 +9,7 @@
     }
   },
   "spec":{
-    "replicas": 2,
+    "replicas": 1,
     "selector":{
       "name":"nginx"
     },
@@ -19,7 +19,7 @@
           "visualize":"true",
           "name":"nginx",
           "app": "sample",
-          "version": "0.0.1",
+          "version": "1.0",
           "uses": "nginx"
         }
       },
@@ -27,7 +27,7 @@
         "containers":[
           {
             "name":"nginx",
-            "image":"nginx"
+            "image":"pankaj2934/rpi-nginx-test:1.0"
           }
         ]
       }

@@ -254,7 +254,8 @@ var renderGroups = function() {
 					'" style="left: ' + (x + 250) + '; top: ' + (y + 160) + '"/>');
 				eltDiv.html('<span>' + 
           truncate(value.metadata.name, 6, true) +
-          (value.metadata.labels.version ? "<br/>" + value.metadata.labels.version : "") + "<br/><br/>" +
+          //(value.metadata.labels.version ? "<br/>" + value.metadata.labels.version : "") + "<br/><br/>" +
+						(value.spec.containers[0].image.split(':',2)[1] ? "<br/><br/>" + value.spec.containers[0].image.split(':',2)[1] : "") + "<br/><br/>" +
           "(" + (value.spec.nodeName ? truncate(value.spec.nodeName, 12) : "None")  +")" +
           '</span>');
 			} else if (value.type == "service") {
@@ -302,7 +303,7 @@ var insertUse = function(name, use) {
 
 var loadData = function() {
 	var deferred = new $.Deferred();
-	var req1 = $.getJSON("/api/v1/namespaces/default/pods?labelSelector=visualize%3Dtrue", function( data ) {
+	var req1 = $.getJSON("http://192.168.2.10:8080/api/v1/namespaces/default/pods?labelSelector=visualize%3Dtrue", function( data ) {
 		pods = data;
 		$.each(data.items, function(key, val) {
     	val.type = 'pod';
@@ -317,7 +318,7 @@ var loadData = function() {
     });
 	});
 
-	var req2 = $.getJSON("/apis/extensions/v1beta1/namespaces/default/deployments?labelSelector=visualize%3Dtrue", function( data ) {
+	var req2 = $.getJSON("http://192.168.2.10:8080/api/v1/namespaces/default/replicationcontrollers?labelSelector=visualize%3Dtrue", function( data ) {
 		controllers = data;
 		$.each(data.items, function(key, val) {
       val.type = 'replicationController';
@@ -326,7 +327,7 @@ var loadData = function() {
 	});
 
 
-	var req3 = $.getJSON("/api/v1/namespaces/default/services?labelSelector=visualize%3Dtrue", function( data ) {
+	var req3 = $.getJSON("http://192.168.2.10:8080/api/v1/namespaces/default/services?labelSelector=visualize%3Dtrue", function( data ) {
 		services = data;
 		//console.log("loadData(): Services");
 		console.log(services);
@@ -337,7 +338,7 @@ var loadData = function() {
 
 	});
 
-	var req4 = $.getJSON("/api/v1/nodes", function( data ) {
+	var req4 = $.getJSON("http://192.168.2.10:8080/api/v1/nodes", function( data ) {
 		nodes = data;
 		//console.log("loadData(): Services");
 		//console.log(nodes);
